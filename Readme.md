@@ -27,3 +27,17 @@ npm i express then npm i -D @types/express
 9. also install mongooose for interacting with Mongodb
 
 10. create a src folder => create app.ts here we will only setup the server using express
+
+11. create a .env file
+
+12. create a config folder in a src folder then create config.ts
+
+13. database connection and create db.ts and write connection
+
+14. ERRor handling and install with the =>
+    npm i http-errors and definig the global error handler after all the routes
+
+// const error = createHttpError(400, "something went wrong");
+// throw error; => this is how you can create httperror and throw manually
+
+15.

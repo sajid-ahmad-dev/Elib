@@ -1,4 +1,3 @@
-import { error } from "console";
 import { config } from "./config";
 import mongoose from "mongoose";
 

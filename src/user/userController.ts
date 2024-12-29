@@ -6,25 +6,33 @@ import bcrypt from "bcrypt";
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password } = req.body;
 
-  // validation
+  // Validate required fields
   if (!name || !email || !password) {
-    const error = createHttpError(400, "All fields are required");
-    return next(error);
+    return next(createHttpError(400, "All fields are required"));
   }
-  const userExist = await userModel.findOne({
-    email,
-  });
-  if (!userExist) {
+
+  try {
+    // Check if the user already exists
+    const userExist = await userModel.findOne({ email });
+    if (userExist) {
+      return next(createHttpError(400, "User already exists"));
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
     await userModel.create({
       name,
       email,
       password: hashedPassword,
     });
-  } else {
-    const userExistError = createHttpError(400, "User Already Exist");
-    return next(userExistError);
+
+    // Send success response
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (err) {
+    next(err); // Pass any errors to the global error handler
   }
-  res.status(200).json({ message: "User Registered" });
 };
+
 export default createUser;

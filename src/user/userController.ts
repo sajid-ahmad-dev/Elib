@@ -2,6 +2,8 @@ import { NextFunction, Response, Request } from "express";
 import createHttpError from "http-errors";
 import { userModel } from "./userModel";
 import bcrypt from "bcrypt";
+import { config } from "../config/config";
+import { sign } from "jsonwebtoken";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password } = req.body;
@@ -35,4 +37,32 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default createUser;
+const login = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(createHttpError(400, "All fields are required"));
+  }
+  try {
+    const userExist = await userModel.findOne({
+      email,
+    });
+    if (userExist) {
+      const comparePassword = await bcrypt.compare(
+        password,
+        userExist.password
+      );
+      if (!comparePassword) {
+        return next(createHttpError(400, "Wrong credentials"));
+      }
+      const token = sign({ sub: userExist._id }, config.jwtSecret as string);
+      res
+        .status(200)
+        .json({ message: "You are logged In successfully", token: token });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { createUser, login };

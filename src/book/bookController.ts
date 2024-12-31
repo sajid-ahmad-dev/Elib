@@ -184,7 +184,7 @@ const getSingleBook = async (
   }
 };
 
-const DeleteBook = async (req: Request, res: Response, next: NextFunction) => {
+const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const toDeleteBook = await bookModel.findOne({
       _id: req.params.bookId,
@@ -222,4 +222,4 @@ const DeleteBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook, updateBook, getAllbook, getSingleBook, DeleteBook };
+export { createBook, updateBook, getAllbook, getSingleBook, deleteBook };

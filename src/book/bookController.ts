@@ -155,4 +155,30 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook, updateBook };
+const getAllbook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const getAllBooks = await bookModel.find();
+    res.json(getAllBooks);
+  } catch (err) {
+    // Pass the error to the global error handler
+    next(err instanceof Error ? err : createHttpError(500, "Server error"));
+  }
+};
+
+const getSingleBook = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const getBook = await bookModel.findById({
+      _id: req.params.bookId,
+    });
+    res.json(getBook);
+  } catch (err) {
+    // Pass the error to the global error handler
+    next(err instanceof Error ? err : createHttpError(500, "Server error"));
+  }
+};
+
+export { createBook, updateBook, getAllbook, getSingleBook };

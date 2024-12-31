@@ -174,6 +174,9 @@ const getSingleBook = async (
     const getBook = await bookModel.findById({
       _id: req.params.bookId,
     });
+    if (!getBook) {
+      return next(createHttpError(404, "Book Not Found"));
+    }
     res.json(getBook);
   } catch (err) {
     // Pass the error to the global error handler

@@ -2,6 +2,7 @@ import path from "node:path";
 import express from "express";
 import {
   createBook,
+  DeleteBook,
   getAllbook,
   getSingleBook,
   updateBook,
@@ -37,5 +38,6 @@ bookRouter.patch(
 
 bookRouter.get("/", getAllbook);
 bookRouter.get("/:bookId", getSingleBook);
+bookRouter.delete("/:bookId", authenticate, DeleteBook);
 
 export default bookRouter;

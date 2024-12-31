@@ -125,7 +125,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       const updatedResultPdf = await cloudinary.uploader.upload(bookFilePath, {
         resource_type: "raw",
         filename_override: completeFileName,
-        folder: "book-pdf",
+        folder: "books-pdf",
         format: "pdf",
       });
 
@@ -184,4 +184,42 @@ const getSingleBook = async (
   }
 };
 
-export { createBook, updateBook, getAllbook, getSingleBook };
+const DeleteBook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const toDeleteBook = await bookModel.findOne({
+      _id: req.params.bookId,
+    });
+    if (!toDeleteBook) {
+      return next(createHttpError(404, "Book Not Found"));
+    }
+    const _req = req as AuthRequest;
+    if (toDeleteBook.author.toString() !== _req.userId) {
+      return next(createHttpError(403, "Unauthorized"));
+    }
+
+    // deleting from cloudinary
+    // to destroy you need public id which is followed as "book-cover/khabdbali"
+
+    const coverFileSplit = toDeleteBook.coverImage.split("/");
+    const coverImagePublicId =
+      coverFileSplit.at(-2) + "/" + coverFileSplit.at(-1)?.split(".")[0];
+
+    const bookFileSplits = toDeleteBook.file.split("/");
+    const bookFilePublicId =
+      bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
+
+    await cloudinary.uploader.destroy(coverImagePublicId);
+    await cloudinary.uploader.destroy(bookFilePublicId, {
+      resource_type: "raw", // this resource type is to be mentioned bcz it is must otherwise it wont be deleted
+    });
+    // console.log(coverImagePublicId, bookFilePublicId);
+
+    await bookModel.deleteOne({ _id: req.params.bookId });
+    res.sendStatus(204);
+  } catch (err) {
+    // Pass the error to the global error handler
+    next(err instanceof Error ? err : createHttpError(500, "Server error"));
+  }
+};
+
+export { createBook, updateBook, getAllbook, getSingleBook, DeleteBook };

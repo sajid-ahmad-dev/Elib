@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import cloudinary from "../config/cloudinary";
 import path from "node:path";
-
+import fs from "node:fs";
 import createHttpError from "http-errors";
+import { bookModel } from "./bookModel";
+import { AuthRequest } from "../middlewares/authenticate";
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
-  // const {}=req.body;
+  const { title, genre } = req.body;
   console.log("files", req.files);
 
   // this is how you deal with types for Express Multer
@@ -44,16 +46,30 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
         format: "pdf",
       }
     );
+    const _req = req as AuthRequest;
 
-    res.status(201).json({
-      message: "uploaded successfully",
-      coverImageuploadResult,
-      bookFileUploadResult,
-    });
+    try {
+      const newBook = await bookModel.create({
+        title,
+        genre,
+        author: _req.userId,
+        coverImage: coverImageuploadResult.secure_url,
+        file: bookFileUploadResult.secure_url,
+      });
+
+      // deleting the temoprary file from public using fs module
+      await fs.promises.unlink(filePath);
+      await fs.promises.unlink(bookFilePath);
+      res.status(201).json({
+        message: "uploaded successfully and the book is created in database",
+        coverImageuploadResult,
+        bookFileUploadResult,
+        newBook,
+      });
+    } catch (err) {
+      res.json({ message: "failed to create the book", error: err });
+    }
   } catch (err) {
-    // Log the error for debugging
-    console.error("Error in createBook:", err);
-
     // Pass the error to the global error handler
     next(err instanceof Error ? err : createHttpError(500, "Server error"));
   }

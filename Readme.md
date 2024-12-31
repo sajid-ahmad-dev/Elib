@@ -40,4 +40,6 @@ npm i express then npm i -D @types/express
 // const error = createHttpError(400, "something went wrong");
 // throw error; => this is how you can create httperror and throw manually
 
-15.
+15. create userRouter =>createUser,Login
+16. create bookRouter =CRUD
+17. installing multer bcz here we need to deal with form-data

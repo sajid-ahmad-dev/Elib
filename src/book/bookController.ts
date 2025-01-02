@@ -148,6 +148,19 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       },
       { new: true }
     );
+    const coverFileSplit = bookExist.coverImage.split("/");
+    const coverImagePublicId =
+      coverFileSplit.at(-2) + "/" + coverFileSplit.at(-1)?.split(".")[0];
+
+    //here i am deleting from the cloudinary after updation
+
+    const bookFileSplits = bookExist.file.split("/");
+    const bookFilePublicId =
+      bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
+    await cloudinary.uploader.destroy(coverImagePublicId);
+    await cloudinary.uploader.destroy(bookFilePublicId, {
+      resource_type: "raw", // this resource type is to be mentioned bcz it is must otherwise it wont be deleted
+    });
     res.status(200).json(updatingBook);
   } catch (err) {
     // Pass the error to the global error handler
@@ -157,7 +170,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 
 const getAllbook = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const getAllBooks = await bookModel.find();
+    const getAllBooks = await bookModel.find().populate("author", "name");
     res.json(getAllBooks);
   } catch (err) {
     // Pass the error to the global error handler
